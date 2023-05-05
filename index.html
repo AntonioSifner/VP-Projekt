@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Europe Map</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
+    <style>
+      /* Add some basic styles for the map */
+      path {
+        fill: #ccc;
+        stroke: #fff;
+        stroke-width: 0.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <svg id="map"></svg>
+    <script>
+      // Set up the dimensions of the map
+      const width = 800;
+      const height = 600;
+
+      // Set up the projection for the map
+      const projection = d3.geoMercator()
+        .center([13, 52])
+        .scale(700)
+        .translate([width / 2, height / 2]);
+
+      // Create a path generator
+      const pathGenerator = d3.geoPath()
+        .projection(projection);
+
+      const colorScale = d3.scaleOrdinal()
+        .domain([
+          "Albania",
+          "Andorra",
+          "Austria",
+          "Belarus",
+          "Belgium",
+          "Bosnia and Herzegovina",
+          "Bulgaria",
+          "Croatia",
+          "Cyprus",
+          "Czech Republic",
+          "Denmark",
+          "Estonia",
+          "Finland",
+          "France",
+          "Germany",
+          "Greece",
+          "Hungary",
+          "Iceland",
+          "Ireland",
+          "Italy",
+          "Kosovo",
+          "Latvia",
+          "Liechtenstein",
+          "Lithuania",
+          "Luxembourg",
+          "Malta",
+          "Moldova",
+          "Monaco",
+          "Montenegro",
+          "Netherlands",
+          "North Macedonia",
+          "Norway",
+          "Poland",
+          "Portugal",
+          "Romania",
+          "Russia",
+          "San Marino",
+          "Serbia",
+          "Slovakia",
+          "Slovenia",
+          "Spain",
+          "Sweden",
+          "Switzerland",
+          "Ukraine",
+          "United Kingdom",
+          "Vatican City"
+        ])
+        .range(d3.schemeCategory10);
+
+      // Load the topojson data
+      d3.json('europe.json').then(function(data) {
+        // Convert the topojson data to geojson
+        const europe = topojson.feature(data, data.objects.europe);
+
+        // Create the SVG element for the map
+        const svg = d3.select('#map')
+          .attr('width', width)
+          .attr('height', height);
+
+        // Create a group for the map features
+        const g = svg.append('g');
+
+        // Add the map features to the group
+        g.selectAll('path')
+          .data(europe.features)
+          .enter()
+          .append('path')
+          .attr('d', pathGenerator)
+          .style('fill', d => colorScale(d.properties.NAME));
+      });
+    </script>
+  </body>
+</html>
