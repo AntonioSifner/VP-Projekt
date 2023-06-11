@@ -1,0 +1,10 @@
+body{
+    display: flex;
+    margin: auto;
+}
+
+.graph{
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+}
