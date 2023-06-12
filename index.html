@@ -13,8 +13,8 @@
     <div class="map">
         <script>   
             var counter = 0;
-            var width = 1000;
-            var height = 1000;
+            var width = innerWidth;
+            var height = innerHeight;
             var graphStatus = false
             var margin = {top: 20, bottom: 70, left:40, right: 20};
             var projection = d3.geo.mercator()
@@ -59,7 +59,7 @@
         
                                 var GDP = [d.properties.Year2013, d.properties.Year2014, d.properties.Year2015, d.properties.Year2016, d.properties.Year2017, d.properties.Year2018, d.properties.Year2019, d.properties.Year2020, d.properties.Year2021, d.properties.Year2022, d.properties.Year2023];
                                 var margin = {top: 45, bottom: 70, left:80, right: 20};
-                                var width = 900 - margin.left - margin.right;
+                                var width = 900  - margin.left - margin.right;
                                 var height = 900 - margin.top - margin.bottom;
                                 var barPadding = 4;
                                 var barWidth = width / GDP.length - barPadding;
@@ -157,14 +157,14 @@
 
             legend.append("rect")
                 .attr("x", "30")
-                .attr("y", "820")
+                .attr("y", "800")
                 .attr("width", rectWidth)
                 .attr("height", rectHeight)
                 .attr("style", "stroke: black; stroke-width: 1; fill: white; opacity: 0.7; stroke-opacity: 1");
 
             legend.append('text')
                 .attr("x", 100)
-                .attr("y", 835)
+                .attr("y", 815)
                 .attr("dy", ".25em")
                 .attr('font-family', 'sans-serif')
                 .text(legendTitle);
@@ -172,13 +172,13 @@
             for (let i = 0; i < colors.length; i++) {
                 legend.append("circle")
                     .attr("cx", "55")
-                    .attr("cy", d => 850 + 15 * (i + 1))
+                    .attr("cy", d => 830 + 15 * (i + 1))
                     .attr("r", "5")
                     .attr("fill", d => colors[i])
 
                 legend.append('text')
                     .attr("x", "65")
-                    .attr("y", 851 + 15 * (i + 1))
+                    .attr("y", 831 + 15 * (i + 1))
                     .attr("dy", ".25em")
                     .attr('font-family', 'sans-serif')
                     .text(d => legendValues[i]);
