@@ -1,33 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://d3js.org/topojson.v1.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <title>Projekt</title>
+    <title>EuropeNominalGDP</title>
+    <style>
+        .titleName{
+            margin: auto;
+            padding: 10px;
+            text-align: center;
+            fill: #ffffff;
+            color: black;
+        }
+
+        .map {
+            max-width: 100%;
+        }
+    </style>
 </head>
 <body>
+    <h1 class="titleName">Kretanje nominalnog GDP-a Europskih zemalja</h1>
     <div class="map">
         <script>   
-            var counter = 0;
             var width = innerWidth;
             var height = innerHeight;
-            var graphStatus = false
-            var margin = {top: 20, bottom: 70, left:40, right: 20};
+            var changeGraph = false;
+            
             var projection = d3.geo.mercator()
-            .scale(700)
-                .translate([width / 2 - 150, height / 2 + 800]);
-                
-            var graphDrawn = false;     
+            .scale(650)
+                .translate([width / 2 - 150, height / 2 +700]);
+
             var path = d3.geo.path()
                   .projection(projection);
-            var svg = d3.select(".map").append("svg")
+
+            var svg = d3.select(".map")
+                  .append("svg")
                   .attr("width", width)
-                  .attr("height", height)
-                  .style("background", "grey");
+                  .attr("height", height * 0.92)
+                  .style("background", "#ADD8E6");
+
+            var zoom = d3.behavior.zoom()
+                  .scaleExtent([1, 2])
+                  .on("zoom", zoomed);
+
+            svg.call(zoom);
+
+            function zoomed() {
+                svg.selectAll("path")
+                    .attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+            }
                  
             d3.json("europe.json", function(error, eu) {
                   var data = topojson.feature(eu, eu.objects.europe);
@@ -35,57 +58,57 @@
                   var color= d3.scale.linear()
                         .domain([0.000, 500.000, 1000.000, 2000.000, 4000.000, 4308.850])
                         .range([d3.rgb("#97CAED"), d3.rgb("#63B0E3"), d3.rgb("#3498DB"), d3.rgb("#2280BF"), d3.rgb("#185D8B"), d3.rgb('#0F3A57')]);
-                
-                  var tooltip = d3.select('body').append('div') 
-                        .style('position', 'absolute')
-                        .style('padding', '4px 8px')
-                        .style('background', 'white')
-                        .style('opacity', 0);
                         
                   var countries = svg.selectAll()
                         .data(data.features)
                         .enter()
-                        .append("path")              
-                        .attr("id", function(d) { return d.id; })
+                        .append("path")
+                        .attr("id", function(d) { return d.id;})
                         .style("stroke", "gray")
-                        .style("stroke-width", 1)
-                        .style("stroke-opacity", 1)
-                        .attr("d", path) .style("fill", function(d) { return color(d.properties.Year2023); })
+                        .attr("d", path) .style("fill", function(d) { return color(d.properties.y2023); })
                         .on("click", function(d){
-                                
-                            if (graphDrawn) {
-                                d3.select(".barchart svg").remove();
-                                }
-        
-                                var GDP = [d.properties.Year2013, d.properties.Year2014, d.properties.Year2015, d.properties.Year2016, d.properties.Year2017, d.properties.Year2018, d.properties.Year2019, d.properties.Year2020, d.properties.Year2021, d.properties.Year2022, d.properties.Year2023];
-                                var margin = {top: 45, bottom: 70, left:80, right: 20};
-                                var width = 900  - margin.left - margin.right;
-                                var height = 900 - margin.top - margin.bottom;
+                                var data = [
+                                    d.properties.y2014, 
+                                    d.properties.y2015, 
+                                    d.properties.y2016, 
+                                    d.properties.y2017, 
+                                    d.properties.y2018, 
+                                    d.properties.y2019, 
+                                    d.properties.y2020, 
+                                    d.properties.y2021, 
+                                    d.properties.y2022, 
+                                    d.properties.y2023];
+                                var margin = {top: 70, bottom: 70, left:85, right: 20};
+                                var width = 1000  - margin.left - margin.right;
+                                var height = 950 - margin.top - margin.bottom;
                                 var barPadding = 4;
-                                var barWidth = width / GDP.length - barPadding;
+                                var barWidth = width / data.length - barPadding;
+
+                                var tooltip = d3.select('body')
+                                    .append('div') 
+                                    .classed('tooltip', true)
+                                    .style('position', 'absolute')
+                                    .style('background', 'white');
+
                                 var x = d3.scale.ordinal()
-                                    .domain(d3.range(GDP.length))
+                                    .domain(d3.range(data.length))
                                     .rangeRoundBands([0, width]);
+                                    
                                 var y = d3.scale.linear()
-                                    .domain([0, d3.max(GDP)])
+                                    .domain([0, d3.max(data)])
                                     .range([height, 0]);
                                                             
                                 var svgGraph = d3.select(".barchart")
                                     .append("svg")
-                                    .attr("width", width + margin.left + margin.right)
+                                    .attr("width", width + margin.left)
                                     .attr("height", height + margin.bottom + margin.top)
                                     .style("background-color", "white")
                                     .append("g")
                                     .attr("transform", "translate(" + margin.left + "," + margin.top +")");  
-                                                            
-                                var xAxis = d3.svg.axis()
-                                    .scale(x)
-                                    .orient("bottom")
-                                    .tickFormat(function(d, i) { return i + 2013; });
 
                                     
                                 var barchart = svgGraph.selectAll("rect")
-                                    .data(GDP)
+                                    .data(data)
                                     .enter()
                                     .append("rect")
                                     .attr("x", function(d, i) { return x(i); })
@@ -94,17 +117,24 @@
                                     .attr("width", barWidth)
                                     .attr("fill", "#3498DB")
                                     .on('mouseover', function(d) {
-
                                     tooltip.transition()
                                         .style('opacity', 1)
                                     tooltip.html(d)
-                                        .style('left', (d3.event.pageX - 15) + 'px')
-                                        .style('top',  (d3.event.pageY - 30) + 'px')});
+                                        .style('left', (d3.event.pageX) + 'px')
+                                        .style('top',  (d3.event.pageY) + 'px')
+                                    });
 
-                                var yAxis = d3.svg.axis()
-                                    .scale(y)
-                                    .orient("left")
-                                    .ticks(10);
+                                svgGraph.append("text")
+                                    .attr("x", (width / 2))
+                                    .attr("y", 0 - (margin.top/2))
+                                    .style("text-anchor", "middle")
+                                    .style("font-size", "2em")
+                                    .text("Nominal GDP of " + d.properties.NAME);
+
+                                var xAxis = d3.svg.axis()
+                                    .scale(x)
+                                    .orient("bottom")
+                                    .tickFormat(function(d, i) { return i + 2014; });
 
                                 svgGraph.append("g")
                                     .attr("class", "x axis")
@@ -113,10 +143,16 @@
                                     .selectAll("text")
                                     .style("text-anchor", "middle");
 
+                                var yAxis = d3.svg.axis()
+                                    .scale(y)
+                                    .orient("left")
+                                    .ticks(10);
+
                                 svgGraph.append("g")
                                     .attr("class", "y axis")
                                     .call(yAxis)
-                                    .append("text")
+
+                                svgGraph.append("text")
                                     .attr("transform", "rotate(-90)")
                                     .attr("x", 0 - (height / 2))
                                     .attr("y", 0 - margin.left)
@@ -132,62 +168,63 @@
                                     .style("text-anchor", "middle")
                                     .style("font-size", "1.5em")
                                     .text("Year");
-                                
-                                svgGraph.append("text")
-                                    .attr("x", (width / 2))
-                                    .attr("y", 0 - (margin.top/2))
-                                    .style("text-anchor", "middle")
-                                    .style("font-size", "2em")
-                                    .text(d.properties.NAME);
 
-                                graphDrawn = true;                                                                                                                                         
+                                if (changeGraph) {
+                                    d3.select(".barchart svg").remove();
+                                    d3.select("body").select(".tooltip").remove();
+                                    }
+                                    
+                                changeGraph=true;
                            })
                         }); 
 
-            const colors = ["#63B0E3", "#3498DB", "#2280BF", "#185D8B", "#0F3A57"];
-            const legendValues = ["0-500 billion USD", "500-1000 billion USD", "1000-2000 billion USD","2000-4000 billion USD", "4000+ billion USD"]
 
-            const legend = svg.append('g');
-            const diameter = 15;
-            const textWidth = 210;
-            const space = 2;
-            const rectWidth = diameter + textWidth + space * 5;
-            const rectHeight = 140;
-            const legendTitle = "Nominal GDP";
+
+            var legend = svg.append('g');
+            var legendLength = 55;
+            var textWidth = 210;
+            var rectHeight = 240;
+            var rectWidth = legendLength + textWidth;
+            var legendTitle = "Nominal GDP";
+
 
             legend.append("rect")
-                .attr("x", "30")
-                .attr("y", "800")
+                .attr("x", "110")
+                .attr("y", "600")
                 .attr("width", rectWidth)
                 .attr("height", rectHeight)
                 .attr("style", "stroke: black; stroke-width: 1; fill: white; opacity: 0.7; stroke-opacity: 1");
 
+
             legend.append('text')
-                .attr("x", 100)
-                .attr("y", 815)
-                .attr("dy", ".25em")
-                .attr('font-family', 'sans-serif')
+                .attr("x", 150)
+                .attr("y", 615)
+                .attr("dy", "0.5em")
+                .style("font-size", "2em")
                 .text(legendTitle);
 
-            for (let i = 0; i < colors.length; i++) {
-                legend.append("circle")
-                    .attr("cx", "55")
-                    .attr("cy", d => 830 + 15 * (i + 1))
-                    .attr("r", "5")
-                    .attr("fill", d => colors[i])
+            var legendColors = ["#63B0E3", "#3498DB", "#2280BF", "#185D8B", "#0F3A57"];
+            var legendValues = ["0-500 billion USD", "500-1000 billion USD", "1000-2000 billion USD","2000-4000 billion USD", "4000+ billion USD"]
+
+
+            for (let i = 0; i < legendColors.length; i++) {
+                legend.append("rect")
+                    .attr("x", "125")
+                    .attr("y", 30 * (i + 1) + 635)
+                    .attr("width", "20")
+                    .attr("height", "20")
+                    .attr("fill", d => legendColors[i]);
+
 
                 legend.append('text')
-                    .attr("x", "65")
-                    .attr("y", 831 + 15 * (i + 1))
-                    .attr("dy", ".25em")
-                    .attr('font-family', 'sans-serif')
+                    .attr("x", "150")
+                    .attr("y", 30 * (i + 1) + 643)
+                    .attr("dy", "0.5em")
                     .text(d => legendValues[i]);
             }
+    </script>  
 
-    </script>
-</div>    
-<div class="graph">
-    <div class="barchart"></div>
-</div>
+<div class="barchart"></div>
+
 </body>
 </html>
